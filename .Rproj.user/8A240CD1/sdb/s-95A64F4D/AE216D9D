@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(lubridate)\n\nlogs = read.table('access.log')\nlogs$V4 = gsub(\"\\\\[\", \"\", logs$V4)\nlogs$V5 = gsub(\"\\\\]\", \"\", logs$V5)\nlogs$V10 = paste(logs$V4, logs$V5, \" \")\n\n# backup original locale\nbkp <- Sys.getlocale('LC_TIME')\n# change locale\nSys.setlocale('LC_TIME','C')\nlogs$V10 = strptime(logs$V10,format='%d/%b/%Y:%H:%M:%S')\nlogs$V11 = hour(logs$V10)\nlogs = logs[c(\"V1\", \"V6\", \"V7\", \"V8\", \"V9\", \"V10\", \"V11\")]\ncolnames(logs) <- c(\"ip\", \"request\", \"http_code\", \"V8\", \"user_id\", \"datetime\", \"time_hour\")\nlibrary(\"DBI\")\nlibrary(\"RSQLite\")\ncon = dbConnect(SQLite(), dbname=\"mining.db\")\ndbSendQuery(con,\"CREATE TABLE logs_v2 (ip TEXT, request TEXT, http_code TEXT, V8 TEXT, user_id TEXT, datetime TEXT, time_hour TEXT)\")\n\ndbWriteTable(con, \"logs_v3\", logs, append=TRUE)\ndbReadTable(con, \"logs_v2\")\n\nuniqueCards = as.data.frame(table(rep(logs$V9, 1)))\n\nuniqueHours = as.data.frame(table(rep(logs$V11, 1)))\nmean(uniqueHours$Freq, trim=1)\n\norderLogs = subset(logs, V6 == \"GET /order.phtml HTTP 1.1\")\nuniqueOrders = as.data.frame(table(rep(orderLogs$V9, 1)))\n",
+    "created" : 1504270516626.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1976880446",
+    "id" : "AE216D9D",
+    "lastKnownWriteTime" : 1507968096,
+    "last_content_update" : 1507969372717,
+    "path" : "~/R/web_mining/1.r",
+    "project_path" : "1.r",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
